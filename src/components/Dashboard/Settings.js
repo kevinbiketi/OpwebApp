@@ -37,7 +37,6 @@ const Settings = ({ settings, onUpdate }) => {
 
   const handleRemoveLogo = () => {
     setLogo(null);
-    setLogoFile(null);
   };
 
   return (

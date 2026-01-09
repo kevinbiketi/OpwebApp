@@ -2,7 +2,7 @@
   "name": "fish-farm-management",
   "version": "1.0.0",
   "description": "Fish Farm Operation Management System",
-  "homepage": ".",
+  "homepage": "https://kevinbiketi.github.io/OpwebApp",
   "private": true,
   "dependencies": {
     "react": "^18.2.0",
