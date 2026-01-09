@@ -59,6 +59,7 @@ async function setupDatabase() {
         section VARCHAR(100) NOT NULL,
         species VARCHAR(255) NOT NULL,
         quantity INT NOT NULL,
+        farming_system VARCHAR(50) DEFAULT 'semi-intensive',
         start_date DATE,
         notes TEXT,
         status VARCHAR(50) DEFAULT 'active',
@@ -66,6 +67,17 @@ async function setupDatabase() {
         FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
       )
     `);
+    
+    // Add farming_system column to existing batches table if it doesn't exist
+    try {
+      await connection.query(`
+        ALTER TABLE batches 
+        ADD COLUMN IF NOT EXISTS farming_system VARCHAR(50) DEFAULT 'semi-intensive'
+      `);
+    } catch (error) {
+      // Column might already exist, ignore error
+      console.log('Note: farming_system column may already exist');
+    }
 
     // Create hatchery_records table
     console.log('Creating hatchery_records table...');

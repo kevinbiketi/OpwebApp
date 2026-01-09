@@ -11,6 +11,7 @@ const BatchManagement = () => {
     section: '',
     species: '',
     quantity: '',
+    farmingSystem: 'semi-intensive',
     startDate: '',
     notes: ''
   });
@@ -56,6 +57,7 @@ const BatchManagement = () => {
         section: '',
         species: '',
         quantity: '',
+        farmingSystem: 'semi-intensive',
         startDate: '',
         notes: ''
       });
@@ -164,6 +166,21 @@ const BatchManagement = () => {
 
             <div className="form-row">
               <div className="form-group">
+                <label htmlFor="farmingSystem">Farming System *</label>
+                <select
+                  id="farmingSystem"
+                  name="farmingSystem"
+                  value={formData.farmingSystem}
+                  onChange={handleChange}
+                  required
+                >
+                  <option value="super-intensive">Super Intensive</option>
+                  <option value="intensive">Intensive</option>
+                  <option value="semi-intensive">Semi-Intensive</option>
+                  <option value="extensive">Extensive</option>
+                </select>
+              </div>
+              <div className="form-group">
                 <label htmlFor="startDate">Start Date</label>
                 <input
                   type="date"
@@ -224,6 +241,12 @@ const BatchManagement = () => {
                   <div className="detail-item">
                     <span className="label">Quantity:</span>
                     <span className="value">{batch.quantity}</span>
+                  </div>
+                  <div className="detail-item">
+                    <span className="label">Farming System:</span>
+                    <span className={`value system-badge ${batch.farming_system || batch.farmingSystem}`}>
+                      {batch.farming_system || batch.farmingSystem || 'semi-intensive'}
+                    </span>
                   </div>
                   {batch.startDate && (
                     <div className="detail-item">

@@ -233,3 +233,32 @@
   border: 1px solid #f5c6cb;
 }
 
+.system-badge {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+
+.system-badge.super-intensive {
+  background: #ff6b6b;
+  color: white;
+}
+
+.system-badge.intensive {
+  background: #4ecdc4;
+  color: white;
+}
+
+.system-badge.semi-intensive {
+  background: #45b7d1;
+  color: white;
+}
+
+.system-badge.extensive {
+  background: #96ceb4;
+  color: white;
+}
+

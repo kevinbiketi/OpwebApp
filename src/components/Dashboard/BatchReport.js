@@ -1,24 +1,37 @@
 import React, { useState, useEffect } from 'react';
+import { batchesAPI } from '../../services/api';
 import './BatchReport.css';
 
 const BatchReport = () => {
   const [batches, setBatches] = useState([]);
   const [filteredBatches, setFilteredBatches] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState({
     section: '',
     species: '',
+    farmingSystem: '',
     startDate: '',
     endDate: ''
   });
 
   useEffect(() => {
-    const savedBatches = localStorage.getItem('batches');
-    if (savedBatches) {
-      const allBatches = JSON.parse(savedBatches);
-      setBatches(allBatches);
-      setFilteredBatches(allBatches);
-    }
+    loadBatches();
   }, []);
+
+  const loadBatches = async () => {
+    try {
+      setLoading(true);
+      const data = await batchesAPI.getAll();
+      setBatches(data);
+      setFilteredBatches(data);
+    } catch (error) {
+      console.error('Error loading batches:', error);
+      setBatches([]);
+      setFilteredBatches([]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleFilterChange = (e) => {
     const newFilters = {
@@ -42,6 +55,13 @@ const BatchReport = () => {
       );
     }
 
+    if (filterValues.farmingSystem) {
+      filtered = filtered.filter(b => {
+        const system = b.farming_system || b.farmingSystem;
+        return system === filterValues.farmingSystem;
+      });
+    }
+
     if (filterValues.startDate) {
       filtered = filtered.filter(b => {
         if (!b.startDate) return false;
@@ -63,6 +83,7 @@ const BatchReport = () => {
     setFilters({
       section: '',
       species: '',
+      farmingSystem: '',
       startDate: '',
       endDate: ''
     });
@@ -77,6 +98,7 @@ const BatchReport = () => {
       summary: {
         bySection: {},
         bySpecies: {},
+        byFarmingSystem: {},
         totalQuantity: 0
       }
     };
@@ -89,6 +111,11 @@ const BatchReport = () => {
       // Count by species
       reportData.summary.bySpecies[batch.species] = 
         (reportData.summary.bySpecies[batch.species] || 0) + 1;
+      
+      // Count by farming system
+      const system = batch.farming_system || batch.farmingSystem || 'semi-intensive';
+      reportData.summary.byFarmingSystem[system] = 
+        (reportData.summary.byFarmingSystem[system] || 0) + 1;
       
       // Total quantity
       reportData.summary.totalQuantity += parseInt(batch.quantity) || 0;
@@ -119,6 +146,12 @@ const BatchReport = () => {
       report += `${species}: ${count} batches\n`;
     });
     
+    report += '\nSUMMARY BY FARMING SYSTEM\n';
+    report += '-'.repeat(60) + '\n';
+    Object.entries(data.summary.byFarmingSystem).forEach(([system, count]) => {
+      report += `${system}: ${count} batches\n`;
+    });
+    
     report += '\n\nBATCH DETAILS\n';
     report += '='.repeat(60) + '\n';
     data.batches.forEach((batch, index) => {
@@ -126,6 +159,8 @@ const BatchReport = () => {
       report += `   Section: ${batch.section}\n`;
       report += `   Species: ${batch.species}\n`;
       report += `   Quantity: ${batch.quantity}\n`;
+      const system = batch.farming_system || batch.farmingSystem || 'semi-intensive';
+      report += `   Farming System: ${system}\n`;
       if (batch.startDate) {
         report += `   Start Date: ${new Date(batch.startDate).toLocaleDateString()}\n`;
       }
@@ -192,6 +227,22 @@ const BatchReport = () => {
           </div>
 
           <div className="form-group">
+            <label htmlFor="farmingSystem">Farming System</label>
+            <select
+              id="farmingSystem"
+              name="farmingSystem"
+              value={filters.farmingSystem}
+              onChange={handleFilterChange}
+            >
+              <option value="">All Systems</option>
+              <option value="super-intensive">Super Intensive</option>
+              <option value="intensive">Intensive</option>
+              <option value="semi-intensive">Semi-Intensive</option>
+              <option value="extensive">Extensive</option>
+            </select>
+          </div>
+
+          <div className="form-group">
             <label htmlFor="startDate">Start Date (From)</label>
             <input
               type="date"
@@ -237,7 +288,11 @@ const BatchReport = () => {
 
       <div className="report-preview">
         <h2>Filtered Batches ({filteredBatches.length})</h2>
-        {filteredBatches.length === 0 ? (
+        {loading ? (
+          <div className="empty-state">
+            <p>Loading batches...</p>
+          </div>
+        ) : filteredBatches.length === 0 ? (
           <div className="empty-state">
             <p>No batches match the current filters.</p>
           </div>
@@ -250,6 +305,7 @@ const BatchReport = () => {
                   <th>Section</th>
                   <th>Species</th>
                   <th>Quantity</th>
+                  <th>Farming System</th>
                   <th>Start Date</th>
                   <th>Status</th>
                 </tr>
@@ -261,6 +317,11 @@ const BatchReport = () => {
                     <td>{batch.section}</td>
                     <td>{batch.species}</td>
                     <td>{batch.quantity}</td>
+                    <td>
+                      <span className={`system-badge ${batch.farming_system || batch.farmingSystem || 'semi-intensive'}`}>
+                        {batch.farming_system || batch.farmingSystem || 'semi-intensive'}
+                      </span>
+                    </td>
                     <td>
                       {batch.startDate 
                         ? new Date(batch.startDate).toLocaleDateString()

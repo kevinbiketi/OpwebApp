@@ -221,16 +221,20 @@ app.get('/api/batches', authenticateToken, async (req, res) => {
 // Create batch
 app.post('/api/batches', authenticateToken, async (req, res) => {
   try {
-    const { batchId, section, species, quantity, startDate, notes } = req.body;
+    const { batchId, section, species, quantity, farmingSystem, startDate, notes } = req.body;
 
     if (!batchId || !section || !species || !quantity) {
       return res.status(400).json({ error: 'Required fields missing' });
     }
 
+    // Validate farming system
+    const validSystems = ['super-intensive', 'intensive', 'semi-intensive', 'extensive'];
+    const system = validSystems.includes(farmingSystem) ? farmingSystem : 'semi-intensive';
+
     const [result] = await pool.execute(
-      `INSERT INTO batches (user_id, batch_id, section, species, quantity, start_date, notes, status)
-       VALUES (?, ?, ?, ?, ?, ?, ?, 'active')`,
-      [req.userId, batchId, section, species, quantity, startDate || null, notes || null]
+      `INSERT INTO batches (user_id, batch_id, section, species, quantity, farming_system, start_date, notes, status)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'active')`,
+      [req.userId, batchId, section, species, quantity, system, startDate || null, notes || null]
     );
 
     const [newBatch] = await pool.execute(

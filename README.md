@@ -7,7 +7,13 @@ A comprehensive web application for managing fish farm operations with multiple 
 - **Authentication System**: Separate sign up and login pages with Twitter blue background (#1DA1F2)
 - **Mutable Logo & Farm Name**: Customizable farm logo and name in settings
 - **Batch Management**: Add, view, and manage batches across different sections
-- **Batch Reports**: Generate comprehensive batch reports with filtering options
+- **Farming Systems Support**: Support for four farming system types:
+  - **Super Intensive**: High-density systems with advanced water treatment
+  - **Intensive**: High-density systems with regular water management
+  - **Semi-Intensive**: Moderate-density systems with supplemental feeding
+  - **Extensive**: Low-density systems relying on natural food sources
+- **System-Specific Calculations**: Automatic feed calculations, stocking density recommendations, and growth rate estimates based on farming system
+- **Batch Reports**: Generate comprehensive batch reports with filtering options (including by farming system)
 - **Section Management**: Dedicated sections for:
   - Hatchery
   - Pre-Grow Out
@@ -33,9 +39,13 @@ npm start
 
 1. **Sign Up/Login**: Create an account or login with existing credentials
 2. **Configure Farm**: Go to Settings to set your farm name and upload a logo
-3. **Manage Batches**: Add new batches with details like species, quantity, section, etc.
-4. **Track Operations**: Record data in each section (Hatchery, Pre-Grow Out, etc.)
-5. **Generate Reports**: Create batch reports with filtering and download options
+3. **Manage Batches**: Add new batches with details like species, quantity, section, and **farming system**
+4. **Select Farming System**: Choose the appropriate farming system (Super Intensive, Intensive, Semi-Intensive, or Extensive) when creating batches
+5. **Track Operations**: Record data in each section (Hatchery, Pre-Grow Out, etc.)
+6. **Generate Reports**: Create batch reports with filtering options (including filtering by farming system)
+7. **View System Information**: Access farming system-specific recommendations and calculations
+
+For detailed information about farming systems, see [FARMING-SYSTEMS-GUIDE.md](FARMING-SYSTEMS-GUIDE.md)
 
 ## Technology Stack
 
@@ -61,7 +71,9 @@ src/
 │   │   ├── BatchManagement.js
 │   │   ├── BatchManagement.css
 │   │   ├── BatchReport.js
-│   │   └── BatchReport.css
+│   │   ├── BatchReport.css
+│   │   ├── FarmingSystemInfo.js
+│   │   └── FarmingSystemInfo.css
 │   └── Sections/
 │       ├── Hatchery.js
 │       ├── PreGrowOut.js
@@ -69,6 +81,11 @@ src/
 │       ├── Puddling.js
 │       ├── Quarantine.js
 │       └── Section.css
+├── services/
+│   └── api.js
+├── utils/
+│   ├── farmingSystemUtils.js
+│   └── errorHandler.js
 ├── App.js
 ├── App.css
 ├── index.js
