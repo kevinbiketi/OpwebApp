@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { authAPI } from '../../services/api';
 import './Auth.css';
 
 const Login = ({ onLogin }) => {
@@ -8,6 +9,7 @@ const Login = ({ onLogin }) => {
     password: ''
   });
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   const handleChange = (e) => {
@@ -17,25 +19,26 @@ const Login = ({ onLogin }) => {
     });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    setLoading(true);
 
-    // Simple validation
     if (!formData.email || !formData.password) {
       setError('Please fill in all fields');
+      setLoading(false);
       return;
     }
 
-    // Simulate login - in real app, this would be an API call
-    const userData = {
-      email: formData.email,
-      name: formData.email.split('@')[0],
-      role: 'manager'
-    };
-    
-    onLogin(userData);
-    navigate('/dashboard');
+    try {
+      const response = await authAPI.login(formData.email, formData.password);
+      onLogin(response.user);
+      navigate('/dashboard');
+    } catch (err) {
+      setError(err.message || 'Login failed. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -71,7 +74,9 @@ const Login = ({ onLogin }) => {
               required
             />
           </div>
-          <button type="submit" className="auth-button">Login</button>
+          <button type="submit" className="auth-button" disabled={loading}>
+            {loading ? 'Logging in...' : 'Login'}
+          </button>
         </form>
         <div className="auth-footer">
           <p>Don't have an account? <Link to="/signup">Sign up</Link></p>

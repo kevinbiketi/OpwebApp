@@ -108,7 +108,7 @@ const Dashboard = ({ user, onLogout }) => {
           <Route path="/" element={<DashboardHome />} />
           <Route 
             path="/settings" 
-            element={<Settings settings={farmSettings} onUpdate={handleSettingsUpdate} />} 
+            element={<Settings onUpdate={handleSettingsUpdate} />} 
           />
           <Route path="/batches" element={<BatchManagement />} />
           <Route path="/reports" element={<BatchReport />} />

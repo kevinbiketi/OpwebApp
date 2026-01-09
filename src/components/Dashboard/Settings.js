@@ -1,10 +1,34 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { settingsAPI } from '../../services/api';
 import './Settings.css';
 
-const Settings = ({ settings, onUpdate }) => {
-  const [farmName, setFarmName] = useState(settings.farmName || '');
-  const [logo, setLogo] = useState(settings.logo || null);
+const Settings = ({ onUpdate }) => {
+  const [farmName, setFarmName] = useState('');
+  const [logo, setLogo] = useState(null);
   const [message, setMessage] = useState('');
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    loadSettings();
+  }, []);
+
+  const loadSettings = async () => {
+    try {
+      const settings = await settingsAPI.get();
+      setFarmName(settings.farm_name || settings.farmName || '');
+      setLogo(settings.logo || null);
+      if (onUpdate) {
+        onUpdate({
+          farmName: settings.farm_name || settings.farmName || 'Fish Farm Management',
+          logo: settings.logo || null
+        });
+      }
+    } catch (error) {
+      console.error('Error loading settings:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleFarmNameChange = (e) => {
     setFarmName(e.target.value);
@@ -25,19 +49,37 @@ const Settings = ({ settings, onUpdate }) => {
     }
   };
 
-  const handleSave = () => {
-    const newSettings = {
-      farmName: farmName || 'Fish Farm Management',
-      logo: logo
-    };
-    onUpdate(newSettings);
-    setMessage('Settings saved successfully!');
-    setTimeout(() => setMessage(''), 3000);
+  const handleSave = async () => {
+    try {
+      setMessage('');
+      await settingsAPI.update(farmName || 'Fish Farm Management', logo);
+      setMessage('Settings saved successfully!');
+      if (onUpdate) {
+        onUpdate({
+          farmName: farmName || 'Fish Farm Management',
+          logo: logo
+        });
+      }
+      setTimeout(() => setMessage(''), 3000);
+    } catch (error) {
+      setMessage(error.message || 'Failed to save settings');
+    }
   };
 
   const handleRemoveLogo = () => {
     setLogo(null);
   };
+
+  if (loading) {
+    return (
+      <div className="settings-container">
+        <h1>Farm Settings</h1>
+        <div className="settings-card">
+          <p>Loading settings...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="settings-container">

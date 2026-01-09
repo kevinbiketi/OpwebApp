@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { authAPI } from '../../services/api';
 import './Auth.css';
 
 const Signup = ({ onSignup }) => {
@@ -10,6 +11,7 @@ const Signup = ({ onSignup }) => {
     confirmPassword: ''
   });
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   const handleChange = (e) => {
@@ -19,35 +21,39 @@ const Signup = ({ onSignup }) => {
     });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    setLoading(true);
 
     // Validation
     if (!formData.name || !formData.email || !formData.password) {
       setError('Please fill in all fields');
+      setLoading(false);
       return;
     }
 
     if (formData.password !== formData.confirmPassword) {
       setError('Passwords do not match');
+      setLoading(false);
       return;
     }
 
     if (formData.password.length < 6) {
       setError('Password must be at least 6 characters');
+      setLoading(false);
       return;
     }
 
-    // Simulate signup - in real app, this would be an API call
-    const userData = {
-      email: formData.email,
-      name: formData.name,
-      role: 'manager'
-    };
-    
-    onSignup(userData);
-    navigate('/dashboard');
+    try {
+      const response = await authAPI.register(formData.name, formData.email, formData.password);
+      onSignup(response.user);
+      navigate('/dashboard');
+    } catch (err) {
+      setError(err.message || 'Registration failed. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -107,7 +113,9 @@ const Signup = ({ onSignup }) => {
               required
             />
           </div>
-          <button type="submit" className="auth-button">Sign Up</button>
+          <button type="submit" className="auth-button" disabled={loading}>
+            {loading ? 'Signing up...' : 'Sign Up'}
+          </button>
         </form>
         <div className="auth-footer">
           <p>Already have an account? <Link to="/login">Login</Link></p>

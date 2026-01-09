@@ -1,25 +1,36 @@
 import React, { useState, useEffect } from 'react';
+import { sectionAPI } from '../../services/api';
 import './Section.css';
 
 const Hatchery = () => {
   const [records, setRecords] = useState([]);
   const [showForm, setShowForm] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [formData, setFormData] = useState({
     date: '',
     species: '',
-    eggsCount: '',
-    hatchingRate: '',
-    waterTemp: '',
-    phLevel: '',
+    eggs_count: '',
+    hatching_rate: '',
+    water_temp: '',
+    ph_level: '',
     notes: ''
   });
 
   useEffect(() => {
-    const saved = localStorage.getItem('hatcheryRecords');
-    if (saved) {
-      setRecords(JSON.parse(saved));
-    }
+    loadRecords();
   }, []);
+
+  const loadRecords = async () => {
+    try {
+      setLoading(true);
+      const data = await sectionAPI.getAll('hatchery');
+      setRecords(data);
+    } catch (error) {
+      console.error('Error loading records:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleChange = (e) => {
     setFormData({
@@ -28,33 +39,36 @@ const Hatchery = () => {
     });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    const newRecord = {
-      id: Date.now().toString(),
-      ...formData,
-      createdAt: new Date().toISOString()
-    };
-    const updated = [...records, newRecord];
-    setRecords(updated);
-    localStorage.setItem('hatcheryRecords', JSON.stringify(updated));
-    setFormData({
-      date: '',
-      species: '',
-      eggsCount: '',
-      hatchingRate: '',
-      waterTemp: '',
-      phLevel: '',
-      notes: ''
-    });
-    setShowForm(false);
+    try {
+      await sectionAPI.create('hatchery', formData);
+      setFormData({
+        date: '',
+        species: '',
+        eggs_count: '',
+        hatching_rate: '',
+        water_temp: '',
+        ph_level: '',
+        notes: ''
+      });
+      setShowForm(false);
+      loadRecords();
+    } catch (error) {
+      console.error('Error creating record:', error);
+      alert('Failed to create record');
+    }
   };
 
-  const handleDelete = (id) => {
+  const handleDelete = async (id) => {
     if (window.confirm('Delete this record?')) {
-      const updated = records.filter(r => r.id !== id);
-      setRecords(updated);
-      localStorage.setItem('hatcheryRecords', JSON.stringify(updated));
+      try {
+        await sectionAPI.delete('hatchery', id);
+        loadRecords();
+      } catch (error) {
+        console.error('Error deleting record:', error);
+        alert('Failed to delete record');
+      }
     }
   };
 
@@ -100,8 +114,8 @@ const Hatchery = () => {
                 <label>Eggs Count *</label>
                 <input
                   type="number"
-                  name="eggsCount"
-                  value={formData.eggsCount}
+                  name="eggs_count"
+                  value={formData.eggs_count}
                   onChange={handleChange}
                   min="1"
                   required
@@ -111,8 +125,8 @@ const Hatchery = () => {
                 <label>Hatching Rate (%)</label>
                 <input
                   type="number"
-                  name="hatchingRate"
-                  value={formData.hatchingRate}
+                  name="hatching_rate"
+                  value={formData.hatching_rate}
                   onChange={handleChange}
                   min="0"
                   max="100"
@@ -125,8 +139,8 @@ const Hatchery = () => {
                 <label>Water Temperature (°C)</label>
                 <input
                   type="number"
-                  name="waterTemp"
-                  value={formData.waterTemp}
+                  name="water_temp"
+                  value={formData.water_temp}
                   onChange={handleChange}
                   step="0.1"
                 />
@@ -135,8 +149,8 @@ const Hatchery = () => {
                 <label>pH Level</label>
                 <input
                   type="number"
-                  name="phLevel"
-                  value={formData.phLevel}
+                  name="ph_level"
+                  value={formData.ph_level}
                   onChange={handleChange}
                   min="0"
                   max="14"
@@ -163,7 +177,9 @@ const Hatchery = () => {
 
       <div className="records-list">
         <h2>Records ({records.length})</h2>
-        {records.length === 0 ? (
+        {loading ? (
+          <div className="empty-state">Loading records...</div>
+        ) : records.length === 0 ? (
           <div className="empty-state">No records found.</div>
         ) : (
           <div className="records-grid">
@@ -175,10 +191,10 @@ const Hatchery = () => {
                 </div>
                 <div className="record-details">
                   <p><strong>Date:</strong> {record.date ? new Date(record.date).toLocaleDateString() : 'N/A'}</p>
-                  <p><strong>Eggs Count:</strong> {record.eggsCount}</p>
-                  {record.hatchingRate && <p><strong>Hatching Rate:</strong> {record.hatchingRate}%</p>}
-                  {record.waterTemp && <p><strong>Water Temp:</strong> {record.waterTemp}°C</p>}
-                  {record.phLevel && <p><strong>pH Level:</strong> {record.phLevel}</p>}
+                  <p><strong>Eggs Count:</strong> {record.eggs_count || record.eggsCount}</p>
+                  {(record.hatching_rate || record.hatchingRate) && <p><strong>Hatching Rate:</strong> {(record.hatching_rate || record.hatchingRate)}%</p>}
+                  {(record.water_temp || record.waterTemp) && <p><strong>Water Temp:</strong> {(record.water_temp || record.waterTemp)}°C</p>}
+                  {(record.ph_level || record.phLevel) && <p><strong>pH Level:</strong> {(record.ph_level || record.phLevel)}</p>}
                   {record.notes && <p><strong>Notes:</strong> {record.notes}</p>}
                 </div>
               </div>

@@ -3,6 +3,7 @@ import { HashRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 import Login from './components/Auth/Login';
 import Signup from './components/Auth/Signup';
 import Dashboard from './components/Dashboard/Dashboard';
+import { authAPI } from './services/api';
 import './App.css';
 
 function App() {
@@ -10,10 +11,10 @@ function App() {
   const [user, setUser] = useState(null);
 
   useEffect(() => {
-    // Check if user is logged in
-    const authStatus = localStorage.getItem('isAuthenticated');
+    // Check if user is logged in (has token)
+    const token = localStorage.getItem('token');
     const userData = localStorage.getItem('user');
-    if (authStatus === 'true' && userData) {
+    if (token && userData) {
       setIsAuthenticated(true);
       setUser(JSON.parse(userData));
     }
@@ -22,15 +23,12 @@ function App() {
   const handleLogin = (userData) => {
     setIsAuthenticated(true);
     setUser(userData);
-    localStorage.setItem('isAuthenticated', 'true');
-    localStorage.setItem('user', JSON.stringify(userData));
   };
 
   const handleLogout = () => {
+    authAPI.logout();
     setIsAuthenticated(false);
     setUser(null);
-    localStorage.removeItem('isAuthenticated');
-    localStorage.removeItem('user');
   };
 
   return (

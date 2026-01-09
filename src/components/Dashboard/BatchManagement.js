@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
+import { batchesAPI } from '../../services/api';
 import './BatchManagement.css';
 
 const BatchManagement = () => {
   const [batches, setBatches] = useState([]);
   const [showForm, setShowForm] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [formData, setFormData] = useState({
     batchId: '',
     section: '',
@@ -15,11 +17,21 @@ const BatchManagement = () => {
   const [message, setMessage] = useState('');
 
   useEffect(() => {
-    const savedBatches = localStorage.getItem('batches');
-    if (savedBatches) {
-      setBatches(JSON.parse(savedBatches));
-    }
+    loadBatches();
   }, []);
+
+  const loadBatches = async () => {
+    try {
+      setLoading(true);
+      const data = await batchesAPI.getAll();
+      setBatches(data);
+    } catch (error) {
+      console.error('Error loading batches:', error);
+      setMessage('Failed to load batches');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleChange = (e) => {
     setFormData({
@@ -28,7 +40,7 @@ const BatchManagement = () => {
     });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     
     if (!formData.batchId || !formData.section || !formData.species || !formData.quantity) {
@@ -37,37 +49,37 @@ const BatchManagement = () => {
       return;
     }
 
-    const newBatch = {
-      id: Date.now().toString(),
-      ...formData,
-      createdAt: new Date().toISOString(),
-      status: 'active'
-    };
-
-    const updatedBatches = [...batches, newBatch];
-    setBatches(updatedBatches);
-    localStorage.setItem('batches', JSON.stringify(updatedBatches));
-    
-    setFormData({
-      batchId: '',
-      section: '',
-      species: '',
-      quantity: '',
-      startDate: '',
-      notes: ''
-    });
-    setShowForm(false);
-    setMessage('Batch added successfully!');
-    setTimeout(() => setMessage(''), 3000);
+    try {
+      await batchesAPI.create(formData);
+      setFormData({
+        batchId: '',
+        section: '',
+        species: '',
+        quantity: '',
+        startDate: '',
+        notes: ''
+      });
+      setShowForm(false);
+      setMessage('Batch added successfully!');
+      setTimeout(() => setMessage(''), 3000);
+      loadBatches();
+    } catch (error) {
+      setMessage(error.message || 'Failed to add batch');
+      setTimeout(() => setMessage(''), 3000);
+    }
   };
 
-  const handleDelete = (id) => {
+  const handleDelete = async (id) => {
     if (window.confirm('Are you sure you want to delete this batch?')) {
-      const updatedBatches = batches.filter(batch => batch.id !== id);
-      setBatches(updatedBatches);
-      localStorage.setItem('batches', JSON.stringify(updatedBatches));
-      setMessage('Batch deleted successfully!');
-      setTimeout(() => setMessage(''), 3000);
+      try {
+        await batchesAPI.delete(id);
+        setMessage('Batch deleted successfully!');
+        setTimeout(() => setMessage(''), 3000);
+        loadBatches();
+      } catch (error) {
+        setMessage(error.message || 'Failed to delete batch');
+        setTimeout(() => setMessage(''), 3000);
+      }
     }
   };
 
@@ -182,7 +194,11 @@ const BatchManagement = () => {
 
       <div className="batches-list">
         <h2>All Batches ({batches.length})</h2>
-        {batches.length === 0 ? (
+        {loading ? (
+          <div className="empty-state">
+            <p>Loading batches...</p>
+          </div>
+        ) : batches.length === 0 ? (
           <div className="empty-state">
             <p>No batches found. Add your first batch to get started.</p>
           </div>
