@@ -77,21 +77,30 @@ src/
 
 ## Deployment to GitHub Pages
 
-1. **Build the project:**
+**⚠️ IMPORTANT: If your GitHub Pages shows markdown files instead of the app, see [DEPLOYMENT.md](DEPLOYMENT.md) for detailed troubleshooting.**
+
+### Quick Deploy:
+
+1. **Deploy using npm:**
    ```bash
-   npm run build
+   npm run deploy
    ```
 
-2. **Deploy to GitHub Pages:**
-   - Go to your repository settings on GitHub
-   - Navigate to "Pages" in the left sidebar
-   - Under "Source", select the `gh-pages` branch and `/root` folder
-   - Or use the GitHub Actions workflow (`.github/workflows/deploy.yml`) for automatic deployment
+2. **Configure GitHub Pages:**
+   - Go to repository **Settings** → **Pages**
+   - Set **Source** to: `gh-pages` branch, `/ (root)` folder
+   - Save and wait 1-2 minutes
 
-3. **Important Notes:**
-   - The app uses HashRouter for GitHub Pages compatibility (URLs will have `#` like `yoursite.com/#/dashboard`)
-   - A `404.html` file is included to handle routing on GitHub Pages
-   - Make sure to set the `homepage` field in `package.json` if deploying to a subdirectory
+3. **Or use GitHub Actions (automatic):**
+   - Push to `main` branch
+   - GitHub Actions will auto-deploy to `gh-pages`
+   - Configure Pages settings as above
+
+### Important Notes:
+- The app uses HashRouter for GitHub Pages compatibility (URLs will have `#` like `yoursite.com/#/dashboard`)
+- A `404.html` file is included to handle routing on GitHub Pages
+- `.nojekyll` file prevents GitHub from processing files with Jekyll
+- `homepage: "."` in `package.json` ensures correct asset paths
 
 ## Notes
 

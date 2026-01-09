@@ -12,7 +12,6 @@ import Quarantine from '../Sections/Quarantine';
 
 const Dashboard = ({ user, onLogout }) => {
   const location = useLocation();
-  const navigate = useNavigate();
   const [farmSettings, setFarmSettings] = useState({
     farmName: 'Fish Farm Management',
     logo: null

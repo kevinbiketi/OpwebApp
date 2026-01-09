@@ -4,7 +4,6 @@ import './Settings.css';
 const Settings = ({ settings, onUpdate }) => {
   const [farmName, setFarmName] = useState(settings.farmName || '');
   const [logo, setLogo] = useState(settings.logo || null);
-  const [logoFile, setLogoFile] = useState(null);
   const [message, setMessage] = useState('');
 
   const handleFarmNameChange = (e) => {
@@ -21,7 +20,6 @@ const Settings = ({ settings, onUpdate }) => {
       const reader = new FileReader();
       reader.onloadend = () => {
         setLogo(reader.result);
-        setLogoFile(file);
       };
       reader.readAsDataURL(file);
     }
